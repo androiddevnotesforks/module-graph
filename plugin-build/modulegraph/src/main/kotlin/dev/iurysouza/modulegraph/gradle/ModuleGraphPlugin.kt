@@ -1,6 +1,5 @@
 package dev.iurysouza.modulegraph.gradle
 
-import dev.iurysouza.modulegraph.parseProjectStructure
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
@@ -24,6 +23,8 @@ open class ModuleGraphPlugin : Plugin<Project> {
             task.theme.set(extension.theme)
             task.orientation.set(extension.orientation)
             task.linkText.set(extension.linkText)
+            task.showFullPath.set(extension.showFullPath)
+
             task.dependencies.set(project.parseProjectStructure())
             task.outputFile.set(project.layout.projectDirectory.file(extension.readmePath))
         }

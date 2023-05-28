@@ -162,6 +162,60 @@ class ModuleGraphPluginFunctionalTest {
     }
 
     @Test
+    fun `when showFullPath option is set to true, the generated graph should show full the path`() {
+        settingsFile.writeText(
+            """
+                rootProject.name = "test"
+                include(":example")
+                include(":groupFolder:example2")
+            """.trimIndent()
+        )
+
+        exampleBuildFile.writeText(
+            """
+                plugins {
+                    java
+                    id("dev.iurysouza.modulegraph")
+                }
+                moduleGraphConfig {
+                    heading.set("### Dependency Diagram")
+                    showFullPath.set(true)
+                    readmePath.set("${readmeFile.absolutePath.replace("\\", "\\\\")}")
+                }
+                dependencies {
+                    implementation(project(":groupFolder:example2"))
+                }
+            """.trimIndent()
+        )
+        readmeFile.writeText("### Dependency Diagram")
+
+        // Run the plugin task
+        GradleRunner.create()
+            .withProjectDir(testProjectDir)
+            .withArguments("createModuleGraph")
+            .withPluginClasspath()
+            .build()
+
+        // Check if the output matches the expected result
+        val expectedOutput =
+            """
+                ### Dependency Diagram
+
+                ```mermaid
+                %%{
+                  init: {
+                    'theme': 'neutral'
+                  }
+                }%%
+
+                graph LR
+                  :example --> :groupFolder:example2
+                ```
+            """.trimIndent()
+        assertEquals(expectedOutput, readmeFile.readText())
+    }
+
+    @Test
     fun `plugin add configuration name to links if configured to`() {
         settingsFile.writeText(
             """
